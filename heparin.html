@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulmoner Emboli Tedavisinde Heparin Hesaplama</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#123a6b;
+    --blue-dark:#0d2c52;
+    --blue-soft:#e7eefa;
+    --cream:#f7f4ee;        /* kırık beyaz */
+    --card:#ffffff;
+    --ink:#111418;          /* siyah normal yazı */
+    --muted:#5a636e;
+    --line:#dcd8ce;
+    --therapeutic:#1a7a4c;
+    --warn:#b4531a;
+    --alert:#a51f1f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 18px 60px;}
+
+  /* Header */
+  header{
+    background:var(--blue);
+    color:#fff;
+    margin:0 -18px 26px;
+    padding:30px 24px 26px;
+    border-bottom:4px solid var(--blue-dark);
+  }
+  header h1{
+    margin:0;
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:-.01em;
+    line-height:1.2;
+  }
+  header .sub{
+    margin-top:10px;
+    font-size:14px;
+    font-weight:500;
+    color:#cfe0f7;
+  }
+  header .sub strong{color:#fff;font-weight:600;}
+
+  /* Section blocks */
+  .section{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    margin-bottom:22px;
+    overflow:hidden;
+  }
+  .section.locked{opacity:.55;}
+  .section-head{
+    background:var(--blue);
+    color:#fff;
+    padding:13px 18px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .step-no{
+    background:#fff;
+    color:var(--blue);
+    width:26px;height:26px;
+    border-radius:50%;
+    display:grid;place-items:center;
+    font-weight:700;font-size:15px;
+    flex:none;
+  }
+  .section-head h2{margin:0;font-size:17px;font-weight:600;}
+  .section-body{padding:20px 18px;}
+
+  label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px;}
+  .hint{font-size:12px;color:var(--muted);font-weight:400;}
+  .field{margin-bottom:16px;}
+  .input-row{display:flex;align-items:stretch;gap:0;max-width:280px;}
+  input[type=number]{
+    flex:1;min-width:0;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:18px;font-weight:600;
+    padding:11px 12px;
+    border:1.5px solid var(--line);
+    border-radius:8px 0 0 8px;
+    background:#fff;color:var(--ink);
+    outline:none;
+  }
+  input[type=number]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(18,58,107,.12);}
+  .unit{
+    display:grid;place-items:center;
+    padding:0 14px;
+    background:var(--blue-soft);
+    border:1.5px solid var(--line);
+    border-left:none;
+    border-radius:0 8px 8px 0;
+    font-size:13px;font-weight:600;color:var(--blue);
+  }
+  .btn{
+    appearance:none;border:none;cursor:pointer;
+    background:var(--blue);color:#fff;
+    font-family:inherit;font-size:15px;font-weight:600;
+    padding:12px 22px;border-radius:8px;
+    transition:background .15s;
+  }
+  .btn:hover{background:var(--blue-dark);}
+  .btn:disabled{background:#9aa4b0;cursor:not-allowed;}
+  .btn:focus-visible{outline:3px solid rgba(18,58,107,.35);outline-offset:2px;}
+
+  /* Results */
+  .result{
+    margin-top:18px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+    display:none;
+  }
+  .result.show{display:block;}
+  .result-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:13px 16px;
+    border-bottom:1px solid var(--line);
+    gap:14px;
+  }
+  .result-row:last-child{border-bottom:none;}
+  .result-row .rl{font-size:14px;color:var(--ink);font-weight:500;}
+  .result-row .rl small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:2px;}
+  .result-row .rv{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:20px;font-weight:600;color:var(--blue);
+    white-space:nowrap;text-align:right;
+  }
+  .result-row .rv small{font-size:12px;color:var(--muted);font-weight:500;}
+  .banner{
+    padding:12px 16px;font-size:14px;font-weight:600;color:#fff;
+  }
+  .banner.therapeutic{background:var(--therapeutic);}
+  .banner.warn{background:var(--warn);}
+  .banner.alert{background:var(--alert);}
+  .banner.increase{background:var(--blue);}
+  .cap-note{
+    background:#fff6e5;border-top:1px solid var(--line);
+    padding:9px 16px;font-size:12.5px;color:var(--warn);font-weight:500;
+  }
+  .followup{
+    background:var(--blue-soft);
+    padding:11px 16px;font-size:13px;color:var(--blue-dark);font-weight:500;
+    border-top:1px solid var(--line);
+  }
+
+  /* Reference table (collapsible) */
+  details.ref{margin-bottom:22px;border:1px solid var(--line);border-radius:10px;background:var(--card);overflow:hidden;}
+  details.ref summary{
+    cursor:pointer;list-style:none;
+    padding:13px 18px;font-weight:600;font-size:14px;color:var(--blue);
+    display:flex;align-items:center;gap:8px;
+  }
+  details.ref summary::-webkit-details-marker{display:none;}
+  details.ref summary::before{content:"▸";transition:transform .15s;}
+  details.ref[open] summary::before{transform:rotate(90deg);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:8px 12px;text-align:left;border-top:1px solid var(--line);vertical-align:top;}
+  th{background:var(--blue-soft);color:var(--blue-dark);font-weight:600;font-size:12px;}
+  td.aptt{font-family:"IBM Plex Mono",monospace;font-weight:600;white-space:nowrap;}
+
+  .disclaimer{
+    font-size:12px;color:var(--muted);
+    background:#fff;border:1px dashed var(--line);border-radius:8px;
+    padding:12px 14px;margin-bottom:20px;line-height:1.55;
+  }
+  footer{
+    text-align:center;font-size:13px;color:var(--muted);
+    padding-top:26px;border-top:1px solid var(--line);
+  }
+  footer strong{color:var(--ink);}
+  .err{color:var(--alert);font-size:13px;font-weight:600;margin-top:8px;display:none;}
+  .err.show{display:block;}
+
+  /* Flakon config + serum hazırlama */
+  .flakon-cfg{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    font-size:13px;font-weight:600;color:var(--blue-dark);
+    background:var(--blue-soft);border-radius:8px;
+    padding:11px 13px;margin-bottom:18px;
+  }
+  .flakon-cfg input{
+    width:78px;font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:14px;
+    padding:6px 8px;border:1.5px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);
+  }
+  .flakon-cfg input:focus{outline:none;border-color:var(--blue);}
+  .flakon-cfg .hint{font-weight:400;flex-basis:100%;}
+  .prep-headline{
+    background:var(--blue);color:#fff;
+    padding:14px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  }
+  .prep-headline .lbl{font-size:14px;font-weight:600;}
+  .prep-headline .lbl small{display:block;color:#cfe0f7;font-weight:400;font-size:12px;margin-top:2px;}
+  .prep-headline .big{font-family:"IBM Plex Mono",monospace;font-size:26px;font-weight:700;white-space:nowrap;text-align:right;}
+  .prep-headline .big small{display:block;font-size:12px;font-weight:500;color:#cfe0f7;text-align:right;}
+  .bag-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;}
+  @media(max-width:520px){.bag-grid{grid-template-columns:1fr;}}
+  .bag-card{border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .bag-card .bag-head{background:var(--blue-soft);color:var(--blue-dark);font-weight:600;font-size:14px;padding:9px 12px;text-align:center;}
+  .bag-card .bag-row{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;font-size:12.5px;color:var(--ink);border-top:1px solid var(--line);}
+  .bag-card .bag-row span:last-child{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--blue);white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Pulmoner Emboli Tedavisinde Heparin Hesaplama</h1>
+    <div class="sub"><strong>Dr. Tuğçe Karamustafalıoğlu</strong> için hazırlandı</div>
+  </header>
+
+  <div class="disclaimer">
+    Ağırlık bazlı IV heparin nomogramı (VTE / pulmoner emboli tedavisi). Hesaplamalar <strong>gerçek vücut ağırlığı</strong> ile yapılır.
+    Bu araç karar desteği amaçlıdır; her kurum kendi nomogramını ve laboratuvar terapötik aralığını doğrulamalıdır.
+  </div>
+
+  <!-- BÖLÜM 1: BOLUS -->
+  <section class="section" id="sec-bolus">
+    <div class="section-head">
+      <span class="step-no">1</span>
+      <h2>Bolus ve Başlangıç İnfüzyonu</h2>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label for="weight">Hasta ağırlığı <span class="hint">(gerçek vücut ağırlığı)</span></label>
+        <div class="input-row">
+          <input type="number" id="weight" min="1" max="300" step="0.1" placeholder="örn. 72" inputmode="decimal">
+          <span class="unit">kg</span>
+        </div>
+        <div class="err" id="weight-err">Lütfen geçerli bir ağırlık girin (1–300 kg).</div>
+      </div>
+      <button class="btn" id="calc-bolus">Bolusu hesapla</button>
+
+      <div class="result" id="bolus-result">
+        <div class="result-row">
+          <span class="rl">Yükleme (bolus) dozu <small>80 ünite/kg IV</small></span>
+          <span class="rv" id="bolus-val">–</span>
+        </div>
+        <div class="result-row">
+          <span class="rl">Başlangıç infüzyonu <small>18 ünite/kg/saat</small></span>
+          <span class="rv" id="inf-val">–</span>
+        </div>
+        <div class="cap-note" id="cap-note" style="display:none;"></div>
+        <div class="followup">Bolustan 6 saat sonra aPTT bakılır → aşağıdaki 2. bölüme geçin.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BÖLÜM 2: İDAME -->
+  <section class="section locked" id="sec-maint">
+    <div class="section-head">
+      <span class="step-no">2</span>
+      <h2>İdame – aPTT'ye Göre Doz Ayarı</h2>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label for="current-rate">Mevcut infüzyon hızı <span class="hint">(başlangıçta otomatik dolar; sonraki ölçümlerde güncel hızı girin)</span></label>
+        <div class="input-row">
+          <input type="number" id="current-rate" min="0" step="1" placeholder="ünite/saat" inputmode="numeric">
+          <span class="unit">Ü/sa</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="aptt">Ölçülen aPTT</label>
+        <div class="input-row">
+          <input type="number" id="aptt" min="0" max="400" step="0.1" placeholder="örn. 65" inputmode="decimal">
+          <span class="unit">saniye</span>
+        </div>
+        <div class="err" id="aptt-err">Lütfen geçerli bir aPTT değeri girin.</div>
+      </div>
+      <button class="btn" id="calc-maint">İdame dozunu hesapla</button>
+
+      <div class="result" id="maint-result">
+        <div class="banner" id="maint-banner"></div>
+        <div class="result-row" id="row-bolus" style="display:none;">
+          <span class="rl">Ek bolus <small>25 ünite/kg</small></span>
+          <span class="rv" id="maint-bolus">–</span>
+        </div>
+        <div class="result-row" id="row-stop" style="display:none;">
+          <span class="rl">İnfüzyonu durdur</span>
+          <span class="rv" id="maint-stop">–</span>
+        </div>
+        <div class="result-row">
+          <span class="rl">Yeni infüzyon hızı</span>
+          <span class="rv" id="maint-newrate">–</span>
+        </div>
+        <div class="followup" id="maint-followup"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BÖLÜM 3: SERUM HAZIRLAMA -->
+  <section class="section locked" id="sec-prep">
+    <div class="section-head">
+      <span class="step-no">3</span>
+      <h2>Serum Hazırlama – Çekilecek Heparin</h2>
+    </div>
+    <div class="section-body">
+      <div class="flakon-cfg">
+        <span>Flakon:</span>
+        <input type="number" id="flakon-units" value="25000" min="1" step="1000" inputmode="numeric">
+        <span>ünite /</span>
+        <input type="number" id="flakon-cc" value="5" min="0.1" step="0.1" inputmode="decimal">
+        <span>cc</span>
+        <span class="hint">Varsayılan: 25.000 Ü / 5 cc = 5.000 Ü/cc. Farklıysa değiştirin.</span>
+      </div>
+
+      <div class="field">
+        <label for="prep-rate">Hedef infüzyon hızı <span class="hint">(1. veya 2. bölümden otomatik dolar; elle de girebilirsiniz)</span></label>
+        <div class="input-row">
+          <input type="number" id="prep-rate" min="0" step="1" placeholder="ünite/saat" inputmode="numeric">
+          <span class="unit">Ü/sa</span>
+        </div>
+      </div>
+      <button class="btn" id="calc-prep">Hazırlamayı hesapla</button>
+
+      <div class="result" id="prep-result">
+        <div class="prep-headline">
+          <span class="lbl">Torbaya çekilecek heparin<small>250 cc ve 500 cc için aynı</small></span>
+          <span class="big" id="prep-cc">–</span>
+        </div>
+        <div class="bag-grid">
+          <div class="bag-card">
+            <div class="bag-head">250 cc SF içine</div>
+            <div class="bag-row"><span>Çekilecek heparin</span><span id="p250-cc">–</span></div>
+            <div class="bag-row"><span>Torbadaki toplam</span><span id="p250-units">–</span></div>
+            <div class="bag-row"><span>Konsantrasyon</span><span id="p250-conc">–</span></div>
+            <div class="bag-row"><span>Pompa hızı</span><span id="p250-rate">–</span></div>
+          </div>
+          <div class="bag-card">
+            <div class="bag-head">500 cc SF içine</div>
+            <div class="bag-row"><span>Çekilecek heparin</span><span id="p500-cc">–</span></div>
+            <div class="bag-row"><span>Torbadaki toplam</span><span id="p500-units">–</span></div>
+            <div class="bag-row"><span>Konsantrasyon</span><span id="p500-conc">–</span></div>
+            <div class="bag-row"><span>Pompa hızı</span><span id="p500-rate">–</span></div>
+          </div>
+        </div>
+        <div class="followup" id="prep-note"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Referans nomogram -->
+  <details class="ref">
+    <summary>Nomogram referans tablosu (aPTT)</summary>
+    <table>
+      <thead><tr><th>aPTT (sn)</th><th>Yanıt</th></tr></thead>
+      <tbody>
+        <tr><td class="aptt">&lt;40</td><td>25 Ü/kg bolus + infüzyonu 3 Ü/kg/sa artır; 6 saat sonra tekrar bak</td></tr>
+        <tr><td class="aptt">40–49</td><td>İnfüzyonu 2 Ü/kg/sa artır; 6 saat sonra tekrar bak</td></tr>
+        <tr><td class="aptt">50–69</td><td>İnfüzyonu 1 Ü/kg/sa artır; 6 saat sonra tekrar bak</td></tr>
+        <tr><td class="aptt">70–110</td><td><strong>Terapötik aralık</strong> – değişiklik yok; 6 saat sonra tekrar bak. 2 ardışık ölçüm terapötik ise günde 1 ölçüme geçilebilir</td></tr>
+        <tr><td class="aptt">111–120</td><td>İnfüzyonu 1 Ü/kg/sa azalt; 6 saat sonra tekrar bak</td></tr>
+        <tr><td class="aptt">121–130</td><td>İnfüzyonu 1 saat durdur, sonra 2 Ü/kg/sa azalt; yeniden başladıktan 6 saat sonra bak</td></tr>
+        <tr><td class="aptt">131–140</td><td>İnfüzyonu 1 saat durdur, sonra 3 Ü/kg/sa azalt; yeniden başladıktan 6 saat sonra bak</td></tr>
+        <tr><td class="aptt">141–150</td><td>İnfüzyonu 2 saat durdur, sonra 4 Ü/kg/sa azalt; yeniden başladıktan 6 saat sonra bak</td></tr>
+        <tr><td class="aptt">&gt;150</td><td>İnfüzyonu 2 saat durdur, sonra 5 Ü/kg/sa azalt <strong>ve klinisyene haber ver</strong>; yeniden başladıktan 6 saat sonra bak</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <footer>
+    <strong>Dr. Kağan Karamustafalıoğlu</strong> tarafından hazırlandı (2026)
+  </footer>
+</div>
+
+<script>
+(function(){
+  var weight = 0;
+
+  var fmt = function(n){ return Math.round(n).toLocaleString('tr-TR'); };
+  var cc2 = function(n){ return n.toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var one = function(n){ return n.toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1}); };
+
+  var secPrep = document.getElementById('sec-prep');
+  var prepRate = document.getElementById('prep-rate');
+
+  // --- BÖLÜM 1: BOLUS ---
+  var wInput = document.getElementById('weight');
+  var wErr = document.getElementById('weight-err');
+  var bolusResult = document.getElementById('bolus-result');
+  var secMaint = document.getElementById('sec-maint');
+  var rateInput = document.getElementById('current-rate');
+
+  document.getElementById('calc-bolus').addEventListener('click', function(){
+    var w = parseFloat(wInput.value);
+    if(isNaN(w) || w < 1 || w > 300){
+      wErr.classList.add('show');
+      bolusResult.classList.remove('show');
+      secMaint.classList.add('locked');
+      return;
+    }
+    wErr.classList.remove('show');
+    weight = w;
+
+    // Bolus 80 Ü/kg, max 10.000
+    var bolus = 80 * w;
+    var bolusCapped = bolus > 10000;
+    if(bolusCapped) bolus = 10000;
+
+    // İnfüzyon 18 Ü/kg/sa, max 2.000 Ü/sa
+    var inf = 18 * w;
+    var infCapped = inf > 2000;
+    if(infCapped) inf = 2000;
+
+    document.getElementById('bolus-val').innerHTML = fmt(bolus) + ' <small>ünite IV</small>';
+    document.getElementById('inf-val').innerHTML = fmt(inf) + ' <small>ünite/saat</small>';
+
+    var capNote = document.getElementById('cap-note');
+    var notes = [];
+    if(bolusCapped) notes.push('Bolus maksimuma ulaştı (10.000 ünite).');
+    if(infCapped) notes.push('Başlangıç infüzyonu maksimuma ulaştı (2.000 ünite/saat).');
+    if(notes.length){ capNote.textContent = '⚠ ' + notes.join(' '); capNote.style.display='block'; }
+    else capNote.style.display='none';
+
+    bolusResult.classList.add('show');
+
+    // İdame bölümünü aç ve mevcut hızı otomatik doldur
+    secMaint.classList.remove('locked');
+    rateInput.value = Math.round(inf);
+    document.getElementById('maint-result').classList.remove('show');
+
+    // Serum hazırlama bölümünü aç ve başlangıç hızıyla hesapla
+    secPrep.classList.remove('locked');
+    prepRate.value = Math.round(inf);
+    computePrep();
+  });
+
+  // --- BÖLÜM 2: İDAME ---
+  var apttInput = document.getElementById('aptt');
+  var apttErr = document.getElementById('aptt-err');
+
+  // aPTT bandına göre kural: {band, tip, deltaPerKg, stopHrs, extraBolus, notify}
+  function ruleFor(a){
+    if(a < 40)   return {label:'aPTT çok düşük', cls:'increase',    deltaPerKg:+3, stopHrs:0, extraBolus:true,  notify:false, txt:'İnfüzyon 3 Ü/kg/sa artırıldı, 25 Ü/kg ek bolus verilir.'};
+    if(a <= 49)  return {label:'aPTT düşük',     cls:'increase',    deltaPerKg:+2, stopHrs:0, extraBolus:false, notify:false, txt:'İnfüzyon 2 Ü/kg/sa artırıldı.'};
+    if(a <= 69)  return {label:'aPTT düşük',     cls:'increase',    deltaPerKg:+1, stopHrs:0, extraBolus:false, notify:false, txt:'İnfüzyon 1 Ü/kg/sa artırıldı.'};
+    if(a <= 110) return {label:'Terapötik aralık', cls:'therapeutic', deltaPerKg:0,  stopHrs:0, extraBolus:false, notify:false, txt:'Değişiklik yok. 2 ardışık ölçüm terapötik ise günde 1 ölçüme geçilebilir.'};
+    if(a <= 120) return {label:'aPTT yüksek',    cls:'warn',        deltaPerKg:-1, stopHrs:0, extraBolus:false, notify:false, txt:'İnfüzyon 1 Ü/kg/sa azaltıldı.'};
+    if(a <= 130) return {label:'aPTT yüksek',    cls:'warn',        deltaPerKg:-2, stopHrs:1, extraBolus:false, notify:false, txt:'İnfüzyon 1 saat durdurulur, sonra 2 Ü/kg/sa azaltılır.'};
+    if(a <= 140) return {label:'aPTT yüksek',    cls:'warn',        deltaPerKg:-3, stopHrs:1, extraBolus:false, notify:false, txt:'İnfüzyon 1 saat durdurulur, sonra 3 Ü/kg/sa azaltılır.'};
+    if(a <= 150) return {label:'aPTT çok yüksek',cls:'alert',       deltaPerKg:-4, stopHrs:2, extraBolus:false, notify:false, txt:'İnfüzyon 2 saat durdurulur, sonra 4 Ü/kg/sa azaltılır.'};
+    return           {label:'aPTT kritik yüksek',cls:'alert',       deltaPerKg:-5, stopHrs:2, extraBolus:false, notify:true,  txt:'İnfüzyon 2 saat durdurulur, sonra 5 Ü/kg/sa azaltılır. Klinisyene haber verin.'};
+  }
+
+  document.getElementById('calc-maint').addEventListener('click', function(){
+    if(secMaint.classList.contains('locked')) return;
+
+    var a = parseFloat(apttInput.value);
+    if(isNaN(a) || a < 0 || a > 400){
+      apttErr.classList.add('show');
+      document.getElementById('maint-result').classList.remove('show');
+      return;
+    }
+    apttErr.classList.remove('show');
+
+    var curRate = parseFloat(rateInput.value);
+    if(isNaN(curRate) || curRate < 0) curRate = 18 * weight;
+
+    var r = ruleFor(a);
+    var deltaTotal = r.deltaPerKg * weight;      // Ü/saat
+    var newRate = Math.max(0, curRate + deltaTotal);
+
+    // Banner
+    var banner = document.getElementById('maint-banner');
+    banner.className = 'banner ' + r.cls;
+    banner.textContent = r.label + ' → ' + r.txt;
+
+    // Ek bolus satırı
+    var rowBolus = document.getElementById('row-bolus');
+    if(r.extraBolus){
+      document.getElementById('maint-bolus').innerHTML = fmt(25 * weight) + ' <small>ünite IV</small>';
+      rowBolus.style.display = 'flex';
+    } else rowBolus.style.display = 'none';
+
+    // Durdurma satırı
+    var rowStop = document.getElementById('row-stop');
+    if(r.stopHrs > 0){
+      document.getElementById('maint-stop').innerHTML = r.stopHrs + ' <small>saat</small>';
+      rowStop.style.display = 'flex';
+    } else rowStop.style.display = 'none';
+
+    // Yeni hız
+    var deltaTxt = '';
+    if(deltaTotal > 0) deltaTxt = '<small>(' + curRate.toLocaleString('tr-TR') + ' + ' + fmt(deltaTotal) + ')</small>';
+    else if(deltaTotal < 0) deltaTxt = '<small>(' + curRate.toLocaleString('tr-TR') + ' − ' + fmt(Math.abs(deltaTotal)) + ')</small>';
+    else deltaTxt = '<small>(değişmedi)</small>';
+    document.getElementById('maint-newrate').innerHTML = fmt(newRate) + ' <small>Ü/sa</small> ' + deltaTxt;
+
+    // Takip
+    var fu = document.getElementById('maint-followup');
+    if(r.stopHrs > 0) fu.textContent = 'İnfüzyon yeniden başlatıldıktan 6 saat sonra aPTT tekrarlanır.';
+    else if(r.cls === 'therapeutic') fu.textContent = '6 saat sonra aPTT tekrarlanır.';
+    else fu.textContent = '6 saat sonra aPTT tekrarlanır.';
+
+    document.getElementById('maint-result').classList.add('show');
+
+    // Bir sonraki tur için mevcut hızı yeni hızla güncelle
+    rateInput.value = Math.round(newRate);
+
+    // Serum hazırlamayı yeni hızla güncelle
+    secPrep.classList.remove('locked');
+    prepRate.value = Math.round(newRate);
+    computePrep();
+  });
+
+  // --- BÖLÜM 3: SERUM HAZIRLAMA ---
+  var flakonUnits = document.getElementById('flakon-units');
+  var flakonCc = document.getElementById('flakon-cc');
+
+  function computePrep(){
+    if(secPrep.classList.contains('locked')) return;
+
+    var rate = parseFloat(prepRate.value);
+    if(isNaN(rate) || rate < 0){
+      document.getElementById('prep-result').classList.remove('show');
+      return;
+    }
+
+    var fu = parseFloat(flakonUnits.value);
+    var fcc = parseFloat(flakonCc.value);
+    if(isNaN(fu) || fu <= 0) fu = 25000;
+    if(isNaN(fcc) || fcc <= 0) fcc = 5;
+    var conc = fu / fcc;               // ünite/cc (ör. 5.000)
+
+    var unitsPer6h = rate * 6;         // 6 saatlik torbadaki toplam ünite
+    var ccDraw = unitsPer6h / conc;    // çekilecek heparin (cc) — torba hacminden bağımsız
+
+    // Üst başlık: ortak çekilecek cc
+    document.getElementById('prep-cc').innerHTML =
+      cc2(ccDraw) + ' <small>cc  (' + fmt(unitsPer6h) + ' ünite)</small>';
+
+    // 250 cc torba
+    document.getElementById('p250-cc').textContent   = cc2(ccDraw) + ' cc';
+    document.getElementById('p250-units').textContent = fmt(unitsPer6h) + ' Ü';
+    document.getElementById('p250-conc').textContent = fmt(unitsPer6h / 250) + ' Ü/cc';
+    document.getElementById('p250-rate').textContent = one(250 / 6) + ' cc/sa';
+
+    // 500 cc torba
+    document.getElementById('p500-cc').textContent   = cc2(ccDraw) + ' cc';
+    document.getElementById('p500-units').textContent = fmt(unitsPer6h) + ' Ü';
+    document.getElementById('p500-conc').textContent = fmt(unitsPer6h / 500) + ' Ü/cc';
+    document.getElementById('p500-rate').textContent = one(500 / 6) + ' cc/sa';
+
+    document.getElementById('prep-note').innerHTML =
+      'Her iki torbaya da <strong>aynı miktarda heparin</strong> (' + cc2(ccDraw) +
+      ' cc) çekilir; fark yalnızca pompa hızı ve konsantrasyondadır. ' +
+      '500 cc daha fazla sıvı yükü verir — sıvı kısıtlı hastalarda 250 cc tercih edilebilir.';
+
+    document.getElementById('prep-result').classList.add('show');
+  }
+
+  document.getElementById('calc-prep').addEventListener('click', computePrep);
+  flakonUnits.addEventListener('input', computePrep);
+  flakonCc.addEventListener('input', computePrep);
+  prepRate.addEventListener('keydown', function(e){ if(e.key==='Enter') computePrep(); });
+
+  // Enter ile hesaplama
+  wInput.addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('calc-bolus').click(); });
+  apttInput.addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('calc-maint').click(); });
+})();
+</script>
+</body>
+</html>
