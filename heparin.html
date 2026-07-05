@@ -39,6 +39,7 @@
     margin:0 -18px 26px;
     padding:30px 24px 26px;
     border-bottom:4px solid var(--blue-dark);
+    text-align:center;
   }
   header h1{
     margin:0;
@@ -222,13 +223,8 @@
 
   <header>
     <h1>Pulmoner Emboli Tedavisinde Heparin Hesaplama</h1>
-    <div class="sub"><strong>Dr. Tuğçe Karamustafalıoğlu</strong> için hazırlandı</div>
+    <div class="sub"><strong>Dr. Tuğçe Karamustafalıoğlu - 2026</strong></div>
   </header>
-
-  <div class="disclaimer">
-    Ağırlık bazlı IV heparin nomogramı (VTE / pulmoner emboli tedavisi). Hesaplamalar <strong>gerçek vücut ağırlığı</strong> ile yapılır.
-    Bu araç karar desteği amaçlıdır; her kurum kendi nomogramını ve laboratuvar terapötik aralığını doğrulamalıdır.
-  </div>
 
   <!-- BÖLÜM 1: BOLUS -->
   <section class="section" id="sec-bolus">
@@ -255,6 +251,14 @@
         <div class="result-row">
           <span class="rl">Başlangıç infüzyonu <small>18 ünite/kg/saat</small></span>
           <span class="rv" id="inf-val">–</span>
+        </div>
+        <div class="result-row">
+          <span class="rl">250 cc SF içine <small>6 saatte gidecek şekilde</small></span>
+          <span class="rv" id="bolus-p250">–</span>
+        </div>
+        <div class="result-row">
+          <span class="rl">500 cc SF içine <small>6 saatte gidecek şekilde</small></span>
+          <span class="rv" id="bolus-p500">–</span>
         </div>
         <div class="cap-note" id="cap-note" style="display:none;"></div>
         <div class="followup">Bolustan 6 saat sonra aPTT bakılır → aşağıdaki 2. bölüme geçin.</div>
@@ -421,6 +425,16 @@
 
     document.getElementById('bolus-val').innerHTML = fmt(bolus) + ' <small>ünite IV</small>';
     document.getElementById('inf-val').innerHTML = fmt(inf) + ' <small>ünite/saat</small>';
+
+    // Başlangıç infüzyonu için çekilecek heparin (250/500 cc, 6 saat)
+    var bfu = parseFloat(document.getElementById('flakon-units').value);
+    var bfcc = parseFloat(document.getElementById('flakon-cc').value);
+    if(isNaN(bfu) || bfu <= 0) bfu = 25000;
+    if(isNaN(bfcc) || bfcc <= 0) bfcc = 5;
+    var bConc = bfu / bfcc;                 // ünite/cc
+    var bCcDraw = (inf * 6) / bConc;        // cc — 250/500 için aynı
+    document.getElementById('bolus-p250').innerHTML = cc2(bCcDraw) + ' <small>cc heparin</small>';
+    document.getElementById('bolus-p500').innerHTML = cc2(bCcDraw) + ' <small>cc heparin</small>';
 
     var capNote = document.getElementById('cap-note');
     var notes = [];
